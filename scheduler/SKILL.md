@@ -108,5 +108,4 @@ description: The scheduler (orchestrator) skill for time-driven videos of any ki
 | 主题 | 文件 |
 | --- | --- |
 | 解压与调度流程 | 本 SKILL（上述阶段） |
-| Jev 免费打分组件 | [`scripts/jev-free.mjs`](scripts/jev-free.mjs) |
 | 运镜与动画工艺（治不灵动） | [`references/camera-animation-craft.md`](references/camera-animation-craft.md) |
