@@ -1,7 +1,7 @@
 ---
 name: video-scheduler
 version: 0.1.0
-description: The scheduler (orchestrator) skill for time-driven videos of any kind. One main agent plays the scheduler: first UNPACKS the user message into structured assets (intent, dependency fill, style/anim/camera design via Jev-judged candidates), then SCHEDULES worker teammates on a 3-5 slot pool with isolated read-only asset grants, audits their numbered outputs, and splices the film. DSH agent-team optional by load. Replaces the separate video-director/video-engineer pair: one brain, one scheduler, many workers.
+description: The scheduler (orchestrator) skill for time-driven videos of any kind. One main agent plays the scheduler: first UNPACKS the user message into structured assets (intent, dependency fill, style/anim/camera design via self-judged candidates), then SCHEDULES worker teammates on a 3-5 slot pool with isolated read-only asset grants, audits their numbered outputs, and splices the film. DSH agent-team optional by load. Replaces the separate video-director/video-engineer pair: one brain, one scheduler, many workers.
 ---
 
 # Video Scheduler — 调度器 Skill
@@ -32,7 +32,7 @@ description: The scheduler (orchestrator) skill for time-driven videos of any ki
 ```text
 (1) 索引表A（资源清单）：登记所有素材——音频(及提取的BPM/onset/频谱/歌词时间轴)、
     素材图、用户意图、补足的依赖。结构表B（段/风格切换点/运镜挂接点）写局部风格时再定。
-(2) 总体风格：先想 20-50 种候选 → 筛 5-20 个（标序号）→ 用 Jev 按三维打分
+(2) 总体风格：先想 20-50 种候选 → 筛 5-20 个（标序号）→ 三维推演打分（模型自判）
     （素材贴合/意图贴合/可实现性）→ 在最高分 2-3 个内随机定 1 个最终大体风格；
 (3) 局部风格：用表B定位哪部分换风格 → 定 1 个最终风格（决定该部分演出细节）；
 (4) 动画细节：文字也是基础元素、要动起来 → 精细排班；
@@ -93,14 +93,14 @@ description: The scheduler (orchestrator) skill for time-driven videos of any ki
 
 ---
 
-## Jev 打分组件
+## 风格判定（模型自判）
 
-用 [`scripts/jev-free.mjs`](scripts/jev-free.mjs) 调 jev-1.13-free 做风格 judge：
-```bash
-node scripts/jev-free.mjs "<state:候选风格+素材>" "fit:noul:是否贴合素材?" "intent:noul:是否贴合意图?" "doable:score:可实现性(0-1)"
-```
-免密机制：Bearer public + opencode/1.18.31 UA + x-opencode-client desktop + 稳定会话（已实测 HTTP 200）。
+总体风格的最终选定由你（调度器）**自判**：候选 5-20 个（已标序号）按三维（素材贴合/意图贴合/可实现性）推演打分，在最高分 2-3 个内随机定 1 个。
 
+规则：
+- 自判依据必须写在 style_decision.json（候选/入围/分数/最终选择+理由）——判了什么要留痕；
+- 不依赖外部评分模型（Jev 等已实测不稳定，已弃用）；外部工具仅可作辅助参考（不推荐依赖）；
+- 随机数用确定性来源（seed），可复现。
 ---
 
 ## Reference map
