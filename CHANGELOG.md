@@ -1,13 +1,58 @@
 # Changelog
 
-All notable changes to the **Universal Realtime Music MV Skill**.
+**Video Scheduler**（前身：Universal Realtime Music MV Skill）的版本史。
 
-Versions follow `MAJOR.MINOR.PATCH`. Entries are grouped by what the shipped
-`SKILL.md` actually contains. Where no archived artifact exists for a version,
-the entry is explicitly marked as *reconstructed* from project documentation
-([`docs/readme_ai.md`](docs/readme_ai.md)) instead of being presented as verified.
+版本号遵循 `MAJOR.MINOR.PATCH`。条目按 **实际交付的 `scheduler/SKILL.md` 内容** 归类；
+无归档产物的版本明确标注为 *reconstructed*，不以"已验证"呈现。
 
 ---
+
+## [0.1.0] — 2026-10-08 · 调度器架构首发
+
+> ⚠️ **未经验证**：本版未经端到端实测；最佳运行环境 **DSH**；想测试请自行估算价格。
+
+### ⚠️ 上一版问题申明（为什么重写）
+
+**上一版（双 skill 分工版，v2.4.x）与调度器早期版的实证问题：**
+
+| # | 问题 | 证据 | 本版对策 |
+| --- | --- | --- | --- |
+| 1 | **缺"设计师/导演"角色**——只有工程纪律，没有视觉设计指导 | v2.4.1 公告（缺设计师角色）；风格适配器 7/8 只有 6-8 行关键词 | 调度器解压阶段含风格决策（20-50 候选 → 三维打分 → 随机定稿） |
+| 2 | **丢失歌词语义理解**——直接从素材跳到风格打分，对"词汇表"反应而非对"语义"反应 | 动画11《world.execute(me);》做成"电路板"（把 execute/program 当意象）；动画12《In Hell We Live, Lament》做成"钟表地狱"（抓 clock/tick） | 新增 **§1.2 意象分析**（硬步骤，先于风格决策）：载体词 vs 意象判别 + 客观信号强制联网查证 |
+| 3 | **画面不灵动、像本地播放器**——只有数据展示，没有演出 | 动画8 实测反馈（"一点也不灵动，像做了个本地音乐播放器"） | `references/camera-animation-craft.md`：每镜必须有被动机的运镜 + 经典动画原理 + reads 计时 + 每场景有事件 |
+| 4 | **成员产出不可控**——模型自由发挥时跳过流程 | 动画8 脚本仅 54 行、未逐词设计 | 设计足迹门槛（文件或思考链至少一处）+ 参数清单（8 项具体值）+ 逐词画面表 |
+| 5 | **外部评分模型不稳定** | Jev 持续 422，space-bunny 兜底也不稳 | **取消外部 judge，改模型自判**（留痕于 `style_decision.json`，随机用确定性 seed） |
+
+### 新增 —— 调度器三阶段
+
+- **第一阶段 解压**：意图识别 → **意象分析（1.2，硬步骤）** → 依赖补足 → 正式解压五小步（索引表A → 总体风格 → 局部风格 → 动画细节 → 运镜设计）→ 主风格颗粒度软规则（1.5）
+- **第二阶段 调度**：3-5 槽位池分成员 → 成员隔离创作（只读批准素材 + 创作纪律摘要，可批判主 agent）→ 文件审计（固定清单）→ 拼接两路（路2 微调成员优先）
+- **第三阶段 成品**：审计通过 + 拼接完成 → 交付资源清单 + 成员产出目录 + 审计记录 + 已知问题
+
+### 新增 —— 意象分析（`references/imagery-analysis.md`）
+
+- 两条路径：素材少→**主体联想**（列 2-3 候选并标假设，缺资料则联网/问用户）；素材多→**深层涵义解析**（默认必做）
+- **载体词 vs 意象**判别表 + 两条检验（换同义词情感变没变 / 只按字面做情感成不成立）
+- 文案打分：表面意思 ≤50 / 文案美感 ≤40 / 多重解读 ≤10
+- 客观触发信号 6 条（技术词密集 / 双关 / 文化引用 / 歌名是句子片段 / 多语言 / 专辑背景）
+- 门槛：无意象分析 = 风格决策不合格
+
+### 新增 —— 运镜与动画工艺（`references/camera-animation-craft.md`）
+
+蒸馏自 Opus 5.5 参考作品（ClaudeAnimationBase `ANIMATION_GUIDE.md` + PDoomVideo `STORYBOARD.md`）：
+运镜（push/pull/pan/tilt/whip/shake/ride，且必须被动机）、动画原理（anticipation / squash-stretch / arcs / follow-through / anti-twinning / exaggeration）、reads 计时、每场景有事件、handmade 手感。
+
+### 新增 —— 成员任务模板（`references/worker-prompt-template.md`）
+
+隔离创作契约：成员只读调度器批准的素材 + 创作纪律摘要，按编号入目录，附抽帧，可批判主 agent。
+
+### 移除
+
+- `scripts/jev-free.mjs`、`scripts/judge.mjs`（外部评分模型方案，实测不稳定，已弃用）
+
+---
+
+## 历史（前身：Universal Realtime Music MV Skill）
 
 ## [2.4.0] — 2026-10-04
 
