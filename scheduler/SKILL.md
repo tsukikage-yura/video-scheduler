@@ -25,8 +25,8 @@ description: The scheduler (orchestrator) skill for time-driven videos of any ki
 
 ### 1.2 意象分析（先于一切风格决策，硬步骤）
 
-**为什么**：直接对"词汇表"选风格会把**载体词误当意象**（反例：`execute/circuit`→选电路板；
-`clock/tick`→选钟表），画面与歌的情感内核错位。风格候选之前，必须先解析"到底在讲什么"。
+**为什么**：直接对"词汇表"选风格会把**载体词误当意象**——歌词里的术语、名词、技术词是【载体】，
+不是主题本身。只按字面选视觉，画面会与歌的情感内核错位。风格候选之前，必须先解析"到底在讲什么"。
 详细方法与反例见 [`references/imagery-analysis.md`](references/imagery-analysis.md)。
 
 **路径 A —— 素材少（一句话/标题/模糊需求）：主体联想**
