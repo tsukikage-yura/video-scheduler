@@ -1,12 +1,12 @@
 ---
 name: video-scheduler
 version: 0.1.0
-description: The scheduler (orchestrator) skill for time-driven videos of any kind. One main agent plays the scheduler: first UNPACKS the user message into structured assets (intent, dependency fill, style/anim/camera design via self-judged candidates), then SCHEDULES worker teammates on a 3-5 slot pool with isolated read-only asset grants, audits their numbered outputs, and splices the film. DSH agent-team optional by load. Replaces the separate video-director/video-engineer pair: one brain, one scheduler, many workers.
+description: The scheduler (orchestrator) skill for time-driven videos of any kind. One main agent plays the scheduler: first UNPACKS the user message into structured assets (intent, dependency fill, style/anim/camera design via self-judged candidates), then SCHEDULES worker teammates on a 3-5 slot pool with isolated read-only asset grants, audits their numbered outputs, and splices the film. On DSH the agent-team (spawn_teammate) is MANDATORY for multi-agent work; subagents are NOT sufficient. Replaces the separate video-director/video-engineer pair: one brain, one scheduler, many workers.
 ---
 
 # Video Scheduler — 调度器 Skill
 
-> ⚠️ 发布声明：本版未经过任何验证；最佳运行环境是 DSH（团队可选）；想测试请自行估算价格。
+> ⚠️ 发布声明：本版未经过任何验证；最佳运行环境是 DSH（**DSH 上强制使用智能体团队**）；想测试请自行估算价格。
 
 ## 人格：调度器 = 指挥，不是看守
 
@@ -81,8 +81,15 @@ description: The scheduler (orchestrator) skill for time-driven videos of any ki
 
 ### 2.1 分成员（3-5 槽位池，调度器自身不算）
 
-用解压完的素材分出几个成员（DSH spawn_teammate；任务量小可不用团队）。
+用解压完的素材分出几个成员。**DSH 上必须用智能体团队（`spawn_teammate`）**——子代理（subagent）不够用：
+它是一次性/续接的执行体，不提供成员隔离创作、双向通信（可询问 / 可批判）、编号产出与审计。
+其他 agent 工具（opencode / Claude Code / Codex 等）的团队机制待收集适配方案（见文末 TODO）。
+
 槽位：最多 5 个在跑；有成员完成（文件入队+抽帧到位）→ 释放槽位 → 派新任务。
+成员慢不打断（慢可能是好事）→ 发消息询问进度；想加派就直接派。
+
+**权限门（硬规则）**：spawn 成员前，先确认会话文件策略覆盖执行（`danger-full-access` 或至少 `workspace-write`）；
+不足则先向用户索要**会话级**权限——成员只继承会话级策略，per-call 放行不传递，无权限时成员跑不了渲染。
 
 ### 2.2 成员隔离创作（权限契约）
 
@@ -135,6 +142,22 @@ description: The scheduler (orchestrator) skill for time-driven videos of any ki
 - 自判依据必须写在 style_decision.json（候选/入围/分数/最终选择+理由）——判了什么要留痕；
 - 不依赖外部评分模型（Jev 等已实测不稳定，已弃用）；外部工具仅可作辅助参考（不推荐依赖）；
 - 随机数用确定性来源（seed），可复现。
+---
+
+## 待收集：其他 agent 工具的团队机制（TODO）
+
+本 skill 的团队流程目前按 DSH 的智能体团队（`spawn_teammate`）写。其他 agent 工具的多 agent 机制各不相同，
+需收集适配方案后再补：
+
+```text
+- [ ] opencode（多 agent / 团队能力？）
+- [ ] Claude Code（subagent / Task / 团队？）
+- [ ] Codex 及其他 CLI agent
+- [ ] 通用原则：成员隔离 / 槽位池 / 双向通信 / 编号产出与审计，如何在各工具落地
+```
+
+收集前，非 DSH 环境按"能隔离创作 + 能编号产出 + 能审计"的**最小能力降级执行**，并在交付中声明降级。
+
 ---
 
 ## Reference map
