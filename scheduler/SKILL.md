@@ -1,7 +1,7 @@
 ---
 name: video-scheduler
 version: 0.1.0
-description: The scheduler (orchestrator) skill for time-driven videos of any kind. One main agent plays the scheduler: first UNPACKS the user message into structured assets (intent, dependency fill, style/anim/camera design via self-judged candidates), then SCHEDULES worker teammates on a 15-slot pool with isolated read-only asset grants (elements first — complex/reusable pieces are built and approved before shot production), audits their numbered outputs, and splices the film. On DSH subagents are the default for worker dispatch (no team member cap); the agent-team (spawn_teammate) is used when members need two-way communication. Replaces the separate video-director/video-engineer pair: one brain, one scheduler, many workers.
+description: The scheduler (orchestrator) skill for time-driven videos of any kind. One main agent plays the scheduler: first UNPACKS the user message into structured assets (intent, dependency fill, style/anim/camera design via self-judged candidates), then SCHEDULES workers on a host-capacity slot pool with isolated read-only asset grants (elements first — complex/reusable pieces are built and approved before shot production), audits their numbered outputs, and splices the film. On DSH subagents are the default for worker dispatch (no team member cap); the agent-team (spawn_teammate) is used when members need two-way communication. Replaces the separate video-director/video-engineer pair: one brain, one scheduler, many workers.
 ---
 
 # Video Scheduler — 调度器 Skill
@@ -12,7 +12,7 @@ description: The scheduler (orchestrator) skill for time-driven videos of any ki
 
 你（主 agent）同时是解压器和调度器。一切以你为中心：先解压资源，再调度成员。
 成员正常运行就【不打断】——慢可能是好事；应对=【发消息询问】进度，想加派就【直接派】；
-15 个成员上限不是限流，是考虑你与成员通信频繁、模型速度慢特意设的。
+成员上限按宿主能力（DSH 团队有 `maxMembers` 上限，默认 16、本机实测 8；子代理无此团队上限）——上限不是限流，是考虑通信频繁、模型速度慢。
 
 ---
 
@@ -107,7 +107,7 @@ L1 节拍层（beat/onset/downbeat/节奏密度/切分/tempo curve）→ L2 结�
 
 其他 agent 工具（opencode / Claude Code / Codex 等）的机制待收集适配方案（见文末 TODO）。
 
-槽位：最多 **15** 个在跑；有成员完成（文件入队+抽帧到位）→ 释放槽位 → 派新任务。
+槽位：按宿主上限（子代理可开更多；团队模式受 `maxMembers` 限制，先探测再派）；有成员完成（文件入队+抽帧到位）→ 释放槽位 → 派新任务。
 成员慢不打断（慢可能是好事）→ 发消息询问进度；想加派就直接派。
 
 **权限门（硬规则）**：spawn 成员前，先确认会话文件策略覆盖执行（`danger-full-access` 或至少 `workspace-write`）；
