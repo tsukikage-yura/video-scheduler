@@ -61,7 +61,10 @@ description: The scheduler (orchestrator) skill for time-driven videos of any ki
 (1) 索引表A（资源清单）：登记所有素材——音频(及提取的BPM/onset/频谱/歌词时间轴)、
     素材图、用户意图、补足的依赖。结构表B（段/风格切换点/运镜挂接点）写局部风格时再定。
 (2) 总体风格：先想 20-50 种候选（可从 [`references/style-catalog.md`](references/style-catalog.md) 的 15 种风格扩展/组合）→ 筛 5-20 个（标序号）→ 三维推演打分（模型自判，必须引用 §1.2 意象分析）
-    （素材贴合/意图贴合/可实现性）→ 在最高分 2-3 个内随机定 1 个最终大体风格；
+    （素材贴合/意图贴合/可实现性——**可实现性必须按 technique-recipes §7 的能力边界真实打**，不能凭感觉给高分）→ 在最高分 2-3 个内随机定 1 个最终大体风格；
+(2.5) **能力自检（硬规则）**：风格定稿后、写代码前，必须查 [`references/technique-recipes.md`](references/technique-recipes.md)：
+    该风格有没有对应配方？有→按配方实现；无→先补配方或换有边界的风格。
+    自检句：**有质感的风格 = fill + 多层 + 混合 + 纹理**，只描边必退回线框。
 (3) 局部风格：用表B定位哪部分换风格 → 定 1 个最终风格（决定该部分演出细节）；
 (4) 动画细节：文字也是基础元素、要动起来 → 精细排班；
 (5) 运镜设计：由动画细节推，规定元素进出场顺序；可反向调整动画细节（上限 3 轮，事不过三）。
@@ -228,5 +231,6 @@ L1 节拍层（beat/onset/downbeat/节奏密度/切分/tempo curve）→ L2 结�
 | **意象分析**（先读懂再选风格，含多语种对照） | [`references/imagery-analysis.md`](references/imagery-analysis.md) |
 | **音乐 → 视觉映射**（四层提取 + 映射表 + 禁用封面） | [`references/music-visual-mapping.md`](references/music-visual-mapping.md) |
 | **风格目录**（15 种风格的特征/技法/技术路线，候选库种子） | [`references/style-catalog.md`](references/style-catalog.md) |
+| **技法配方**（风格特征 → 代码怎么画；选风格前必查） | [`references/technique-recipes.md`](references/technique-recipes.md) |
 | 运镜与动画工艺（治不灵动） | [`references/camera-animation-craft.md`](references/camera-animation-craft.md) |
 | 成员任务模板（隔离创作契约） | [`references/worker-prompt-template.md`](references/worker-prompt-template.md) |
