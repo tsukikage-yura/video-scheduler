@@ -60,7 +60,7 @@ description: The scheduler (orchestrator) skill for time-driven videos of any ki
 ```text
 (1) 索引表A（资源清单）：登记所有素材——音频(及提取的BPM/onset/频谱/歌词时间轴)、
     素材图、用户意图、补足的依赖。结构表B（段/风格切换点/运镜挂接点）写局部风格时再定。
-(2) 总体风格：先想 20-50 种候选 → 筛 5-20 个（标序号）→ 三维推演打分（模型自判，必须引用 §1.2 意象分析）
+(2) 总体风格：先想 20-50 种候选（可从 [`references/style-catalog.md`](references/style-catalog.md) 的 15 种风格扩展/组合）→ 筛 5-20 个（标序号）→ 三维推演打分（模型自判，必须引用 §1.2 意象分析）
     （素材贴合/意图贴合/可实现性）→ 在最高分 2-3 个内随机定 1 个最终大体风格；
 (3) 局部风格：用表B定位哪部分换风格 → 定 1 个最终风格（决定该部分演出细节）；
 (4) 动画细节：文字也是基础元素、要动起来 → 精细排班；
@@ -227,5 +227,6 @@ L1 节拍层（beat/onset/downbeat/节奏密度/切分/tempo curve）→ L2 结�
 | 解压与调度流程（三阶段） | 本 SKILL（上述阶段） |
 | **意象分析**（先读懂再选风格，含多语种对照） | [`references/imagery-analysis.md`](references/imagery-analysis.md) |
 | **音乐 → 视觉映射**（四层提取 + 映射表 + 禁用封面） | [`references/music-visual-mapping.md`](references/music-visual-mapping.md) |
+| **风格目录**（15 种风格的特征/技法/技术路线，候选库种子） | [`references/style-catalog.md`](references/style-catalog.md) |
 | 运镜与动画工艺（治不灵动） | [`references/camera-animation-craft.md`](references/camera-animation-craft.md) |
 | 成员任务模板（隔离创作契约） | [`references/worker-prompt-template.md`](references/worker-prompt-template.md) |
