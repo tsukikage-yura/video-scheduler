@@ -1,12 +1,12 @@
 ---
 name: video-scheduler
 version: 0.1.0
-description: The scheduler (orchestrator) skill for time-driven videos of any kind. One main agent plays the scheduler: first UNPACKS the user message into structured assets (intent, dependency fill, style/anim/camera design via self-judged candidates), then SCHEDULES worker teammates on a 15-slot pool with isolated read-only asset grants (elements first — complex/reusable pieces are built and approved before shot production), audits their numbered outputs, and splices the film. On DSH the agent-team (spawn_teammate) is MANDATORY for multi-agent work; subagents are NOT sufficient. Replaces the separate video-director/video-engineer pair: one brain, one scheduler, many workers.
+description: The scheduler (orchestrator) skill for time-driven videos of any kind. One main agent plays the scheduler: first UNPACKS the user message into structured assets (intent, dependency fill, style/anim/camera design via self-judged candidates), then SCHEDULES worker teammates on a 15-slot pool with isolated read-only asset grants (elements first — complex/reusable pieces are built and approved before shot production), audits their numbered outputs, and splices the film. On DSH subagents are the default for worker dispatch (no team member cap); the agent-team (spawn_teammate) is used when members need two-way communication. Replaces the separate video-director/video-engineer pair: one brain, one scheduler, many workers.
 ---
 
 # Video Scheduler — 调度器 Skill
 
-> ⚠️ 发布声明：本版未经过任何验证；最佳运行环境是 DSH（**DSH 上强制使用智能体团队**）；想测试请自行估算价格。
+> ⚠️ 发布声明：本版未经过任何验证；最佳运行环境是 DSH（**子代理分派成员**）；想测试请自行估算价格。
 
 ## 人格：调度器 = 指挥，不是看守
 
@@ -69,6 +69,14 @@ description: The scheduler (orchestrator) skill for time-driven videos of any ki
 
 音频可提取信息（节奏/频谱/歌词时间轴等）= 素材，全部进资源清单。
 
+**音乐分析按四层做**（详见 [`references/music-visual-mapping.md`](references/music-visual-mapping.md)）：
+L1 节拍层（beat/onset/downbeat/节奏密度/切分/tempo curve）→ L2 结构层（段落切分/自相似/能量弧/静音段/novelty 转折）
+→ L3 音色层（调性/和声变化/频谱质心/频谱通量）→ L4 分轨层（人声分离/鼓组/人声起止/音高曲线）。
+**只做 L1 = 卡点播放器**——四层都要，落盘成 audio_features.json / beats.json。
+
+**硬规则：封面不作为风格来源**（封面是营销产物，会锚定判断；风格来源 = 歌词意象 + 音乐数据）。
+例外：用户明确说"按封面风格做"时，记为锁定决策。
+
 **风格判定留痕规则**（配合 (2)）：
 - 自判依据必须写在 `style_decision.json`（候选 / 入围 / 分数 / 最终选择 + 理由）——判了什么要留痕；
 - 不依赖外部评分模型（外部工具仅可作辅助参考，不推荐依赖）；
@@ -87,9 +95,17 @@ description: The scheduler (orchestrator) skill for time-driven videos of any ki
 
 ### 2.1 分成员（槽位池，调度器自身不算）
 
-用解压完的素材分出几个成员。**DSH 上必须用智能体团队（`spawn_teammate`）**——子代理（subagent）不够用：
-它是一次性/续接的执行体，不提供成员隔离创作、双向通信（可询问 / 可批判）、编号产出与审计。
-其他 agent 工具（opencode / Claude Code / Codex 等）的团队机制待收集适配方案（见文末 TODO）。
+用解压完的素材分出几个成员。
+
+**DSH 上默认用子代理（subagent）分派成员**——子代理没有团队的人数上限，可开更多并行。
+需要成员间**双向通信**（成员主动汇报/批判调度器）或强隔离时，可改用智能体团队（`spawn_teammate`）。
+
+子代理模式下，**隔离与审计由调度器侧保证**：
+- 隔离：只把该成员该读的素材写进它的任务（prompt 限定），产出到独立编号目录；
+- 审计：调度器按同一套审计清单审文件（见 §2.3）；
+- 通信差异（如实声明）：子代理**不能主动批判调度器**，只能完成后回报——需要双向讨论时改用团队。
+
+其他 agent 工具（opencode / Claude Code / Codex 等）的机制待收集适配方案（见文末 TODO）。
 
 槽位：最多 **15** 个在跑；有成员完成（文件入队+抽帧到位）→ 释放槽位 → 派新任务。
 成员慢不打断（慢可能是好事）→ 发消息询问进度；想加派就直接派。
@@ -210,5 +226,6 @@ description: The scheduler (orchestrator) skill for time-driven videos of any ki
 | --- | --- |
 | 解压与调度流程（三阶段） | 本 SKILL（上述阶段） |
 | **意象分析**（先读懂再选风格，含多语种对照） | [`references/imagery-analysis.md`](references/imagery-analysis.md) |
+| **音乐 → 视觉映射**（四层提取 + 映射表 + 禁用封面） | [`references/music-visual-mapping.md`](references/music-visual-mapping.md) |
 | 运镜与动画工艺（治不灵动） | [`references/camera-animation-craft.md`](references/camera-animation-craft.md) |
 | 成员任务模板（隔离创作契约） | [`references/worker-prompt-template.md`](references/worker-prompt-template.md) |
