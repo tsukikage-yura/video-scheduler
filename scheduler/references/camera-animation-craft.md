@@ -1,6 +1,6 @@
 # Camera & Animation Craft — distilled from Opus 5.5 reference work
 
-**Added in v2.5.0 · distilled from ClaudeAnimationBase (ANIMATION_GUIDE.md) and
+**Distilled from ClaudeAnimationBase (ANIMATION_GUIDE.md) and
 PDoomVideo (STORYBOARD.md) — the Opus 5.5 reference films for "I'm Upping My
 P(doom)".** These are the concrete camera moves and animation principles that make
 a frame feel ALIVE instead of like a music player. Apply per shot, per batch.
