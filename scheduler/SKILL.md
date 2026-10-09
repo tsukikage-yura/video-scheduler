@@ -232,5 +232,6 @@ L1 节拍层（beat/onset/downbeat/节奏密度/切分/tempo curve）→ L2 结�
 | **音乐 → 视觉映射**（四层提取 + 映射表 + 禁用封面） | [`references/music-visual-mapping.md`](references/music-visual-mapping.md) |
 | **风格目录**（15 种风格的特征/技法/技术路线，候选库种子） | [`references/style-catalog.md`](references/style-catalog.md) |
 | **技法配方**（风格特征 → 代码怎么画；选风格前必查） | [`references/technique-recipes.md`](references/technique-recipes.md) |
+| **画笔库**（成员可直接用的绘制原语/表情系统/截图工具） | [`assets/`](assets/README.md) |
 | 运镜与动画工艺（治不灵动） | [`references/camera-animation-craft.md`](references/camera-animation-craft.md) |
 | 成员任务模板（隔离创作契约） | [`references/worker-prompt-template.md`](references/worker-prompt-template.md) |

@@ -7,3 +7,6 @@
 # OS / editor noise
 .DS_Store
 *.swp
+
+# Experiment artifacts (research output, kept outside skill repo)
+exp/

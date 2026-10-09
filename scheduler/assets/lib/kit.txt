@@ -1,0 +1,145 @@
+'use strict';
+const W=1920, H=1080;
+const g=document.getElementById('c').getContext('2d');
+g.imageSmoothingEnabled=true; g.lineJoin='round'; g.lineCap='round';
+
+/* ============ 确定性噪声内核（无 Math.random） ============ */
+function hashi(x,y,s){
+  let h=Math.imul(x|0,0x27d4eb2d)^Math.imul(y|0,0x165667b1)^Math.imul((s|0)+0x9e3779b1,0x85ebca6b);
+  h=Math.imul(h^(h>>>15),0x85ebca6b); h=Math.imul(h^(h>>>13),0xc2b2ae35);
+  return ((h^(h>>>16))>>>0)/4294967296;
+}
+const clamp=(v,a,b)=>v<a?a:(v>b?b:v);
+const lerp=(a,b,t)=>a+(b-a)*t;
+const smooth=t=>t*t*(3-2*t);
+function vnoise(x,y,s){
+  const xi=Math.floor(x), yi=Math.floor(y), xf=x-xi, yf=y-yi;
+  const u=smooth(xf), v=smooth(yf);
+  const a=hashi(xi,yi,s), b=hashi(xi+1,yi,s), c=hashi(xi,yi+1,s), d=hashi(xi+1,yi+1,s);
+  return lerp(lerp(a,b,u), lerp(c,d,u), v);
+}
+function fbm(x,y,oct,s,lac,gain){
+  lac=lac||2; gain=(gain===undefined)?0.5:gain;
+  let amp=1,f=1,sum=0,norm=0;
+  for(let i=0;i<oct;i++){ sum+=amp*vnoise(x*f,y*f,s+i*131); norm+=amp; amp*=gain; f*=lac; }
+  return sum/norm;
+}
+function ridged(x,y,oct,s){
+  let amp=1,f=1,sum=0,norm=0;
+  for(let i=0;i<oct;i++){ sum+=amp*(1-Math.abs(vnoise(x*f,y*f,s+i*77)*2-1)); norm+=amp; amp*=0.5; f*=2; }
+  return sum/norm;
+}
+function voronoi(x,y,s,jit){
+  jit=(jit===undefined)?1:jit;
+  const xi=Math.floor(x), yi=Math.floor(y);
+  let f1=1e9,f2=1e9,id=0,cx=0,cy=0;
+  for(let j=-1;j<=1;j++) for(let i=-1;i<=1;i++){
+    const gx=xi+i, gy=yi+j;
+    const ox=hashi(gx,gy,s), oy=hashi(gx,gy,s+7919);
+    const px=gx+0.5+(ox-0.5)*jit, py=gy+0.5+(oy-0.5)*jit;
+    const dx=px-x, dy=py-y, d=Math.sqrt(dx*dx+dy*dy);
+    if(d<f1){ f2=f1; f1=d; id=hashi(gx,gy,s+104729); cx=px; cy=py; }
+    else if(d<f2){ f2=d; }
+  }
+  return {f1:f1,f2:f2,id:id,edge:(f2-f1),cx:cx,cy:cy};
+}
+function rng(seed){ let a=seed>>>0; return function(){ a=(a+0x6D2B79F5)>>>0; let t=a; t=Math.imul(t^(t>>>15),t|1); t^=t+Math.imul(t^(t>>>7),t|61); return ((t^(t>>>14))>>>0)/4294967296; }; }
+
+/* ============ 颜色 ============ */
+function ramp(stops,t){
+  t=clamp(t,0,1);
+  for(let i=1;i<stops.length;i++){
+    if(t<=stops[i][0]){
+      const a=stops[i-1], b=stops[i];
+      const k=(t-a[0])/Math.max(1e-6,b[0]-a[0]);
+      return [lerp(a[1][0],b[1][0],k), lerp(a[1][1],b[1][1],k), lerp(a[1][2],b[1][2],k)];
+    }
+  }
+  return stops[stops.length-1][1].slice();
+}
+function rgba(c,a){ return 'rgba('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+','+a+')'; }
+function hex(h){ return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)]; }
+
+/* ============ 离屏逐像素场 ============ */
+function field(w,h,fn){
+  const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+  const c2=cv.getContext('2d');
+  const img=c2.createImageData(w,h), d=img.data;
+  let k=0;
+  for(let y=0;y<h;y++){ for(let x=0;x<w;x++){
+    const c=fn(x,y);
+    d[k++]=c[0]; d[k++]=c[1]; d[k++]=c[2]; d[k++]=(c.length>3?c[3]:255);
+  }}
+  c2.putImageData(img,0,0); return cv;
+}
+/* 颗粒噪点叠加：统一画面质感的万能一步 */
+function grain(ctx,w,h,amt,seed,chroma){
+  const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+  const c2=cv.getContext('2d'); const img=c2.createImageData(w,h), d=img.data;
+  let k=0;
+  for(let y=0;y<h;y++){ for(let x=0;x<w;x++){
+    const n=hashi(x,y,seed);
+    let r=128+(n-0.5)*255, gg=r, b=r;
+    if(chroma){ gg=128+(hashi(x,y,seed+31)-0.5)*255; b=128+(hashi(x,y,seed+61)-0.5)*255; }
+    d[k++]=r; d[k++]=gg; d[k++]=b; d[k++]=amt*255;
+  }}
+  c2.putImageData(img,0,0);
+  ctx.save(); ctx.globalCompositeOperation='overlay'; ctx.drawImage(cv,0,0); ctx.restore();
+}
+function vignette(ctx,w,h,str,cy){
+  const grd=ctx.createRadialGradient(w*0.5,(cy===undefined?h*0.46:cy),h*0.18,w*0.5,h*0.5,h*0.92);
+  grd.addColorStop(0,'rgba(0,0,0,0)'); grd.addColorStop(1,'rgba(0,0,0,'+str+')');
+  ctx.save(); ctx.fillStyle=grd; ctx.fillRect(0,0,w,h); ctx.restore();
+}
+function warmLight(ctx,w,h,cx,cy,rad,col,alpha){
+  const grd=ctx.createRadialGradient(cx,cy,0,cx,cy,rad);
+  grd.addColorStop(0,'rgba('+col+','+alpha+')');
+  grd.addColorStop(0.55,'rgba('+col+','+(alpha*0.35)+')');
+  grd.addColorStop(1,'rgba('+col+',0)');
+  ctx.save(); ctx.globalCompositeOperation='screen'; ctx.fillStyle=grd; ctx.fillRect(0,0,w,h); ctx.restore();
+}
+
+/* ============ 路径工具 ============ */
+function roundedPolyPath(pts,r){
+  const p=new Path2D(); const n=pts.length;
+  for(let i=0;i<n;i++){
+    const prev=pts[(i-1+n)%n], cur=pts[i], next=pts[(i+1)%n];
+    const v1=[prev[0]-cur[0],prev[1]-cur[1]], v2=[next[0]-cur[0],next[1]-cur[1]];
+    const l1=Math.hypot(v1[0],v1[1])||1, l2=Math.hypot(v2[0],v2[1])||1;
+    const r1=Math.min(r,l1/2), r2=Math.min(r,l2/2);
+    const a=[cur[0]+v1[0]/l1*r1,cur[1]+v1[1]/l1*r1];
+    const b=[cur[0]+v2[0]/l2*r2,cur[1]+v2[1]/l2*r2];
+    if(i===0) p.moveTo(a[0],a[1]); else p.lineTo(a[0],a[1]);
+    p.quadraticCurveTo(cur[0],cur[1],b[0],b[1]);
+  }
+  p.closePath(); return p;
+}
+function blobPath(cx,cy,rx,ry,n,seed,jit){
+  const p=new Path2D(); const pts=[];
+  for(let i=0;i<n;i++){
+    const a=i/n*Math.PI*2;
+    const rr=1+(hashi(i,seed,7)-0.5)*2*(jit===undefined?0.12:jit);
+    pts.push([cx+Math.cos(a)*rx*rr, cy+Math.sin(a)*ry*rr]);
+  }
+  p.moveTo((pts[0][0]+pts[n-1][0])/2,(pts[0][1]+pts[n-1][1])/2);
+  for(let i=0;i<n;i++){
+    const a=pts[i], b=pts[(i+1)%n];
+    p.quadraticCurveTo(a[0],a[1],(a[0]+b[0])/2,(a[1]+b[1])/2);
+  }
+  p.closePath(); return p;
+}
+/* 沿路径的颗粒/毛边：沿法线方向抖动的小短线 */
+function fuzz(ctx,pathPts,count,seed,len,col,width){
+  ctx.save(); ctx.strokeStyle=col; ctx.lineWidth=width||1.5;
+  for(let i=0;i<count;i++){
+    const t=hashi(i,seed,3);
+    const idx=t*(pathPts.length-1); const i0=Math.floor(idx), f=idx-i0;
+    const a=pathPts[Math.min(i0,pathPts.length-1)], b=pathPts[Math.min(i0+1,pathPts.length-1)];
+    const px=lerp(a[0],b[0],f), py=lerp(a[1],b[1],f);
+    const nx=-(b[1]-a[1]), ny=(b[0]-a[0]); const l=Math.hypot(nx,ny)||1;
+    const L=len*(0.4+hashi(i,seed,11));
+    ctx.beginPath(); ctx.moveTo(px,py);
+    ctx.lineTo(px+nx/l*L, py+ny/l*L); ctx.stroke();
+  }
+  ctx.restore();
+}
