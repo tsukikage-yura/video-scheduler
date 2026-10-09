@@ -1,7 +1,7 @@
 ---
 name: video-scheduler
 version: 0.1.0
-description: The scheduler (orchestrator) skill for time-driven videos of any kind. One main agent plays the scheduler: first UNPACKS the user message into structured assets (intent, dependency fill, style/anim/camera design via self-judged candidates), then SCHEDULES worker teammates on a 3-5 slot pool with isolated read-only asset grants, audits their numbered outputs, and splices the film. On DSH the agent-team (spawn_teammate) is MANDATORY for multi-agent work; subagents are NOT sufficient. Replaces the separate video-director/video-engineer pair: one brain, one scheduler, many workers.
+description: The scheduler (orchestrator) skill for time-driven videos of any kind. One main agent plays the scheduler: first UNPACKS the user message into structured assets (intent, dependency fill, style/anim/camera design via self-judged candidates), then SCHEDULES worker teammates on a 15-slot pool with isolated read-only asset grants (elements first — complex/reusable pieces are built and approved before shot production), audits their numbered outputs, and splices the film. On DSH the agent-team (spawn_teammate) is MANDATORY for multi-agent work; subagents are NOT sufficient. Replaces the separate video-director/video-engineer pair: one brain, one scheduler, many workers.
 ---
 
 # Video Scheduler — 调度器 Skill
