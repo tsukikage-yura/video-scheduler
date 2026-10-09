@@ -1064,3 +1064,88 @@ L3 + 纹样 / 木纹 / 铆钉 / 溢光 / 环境光    → 变成"有光的画面
 ② 函数提升会覆盖共享 kit 的 API（function band 覆盖 kit 的 band → TDZ 报错）
 ③ g.save()/restore() 必须严格配对；一次 clip() 没配对会裁掉后面全部绘制
 ```
+
+---
+
+## 18. 渲染层选择：Canvas 2D 还是 WebGL/GLSL（2026-10-10 实证对比）
+
+### 18.1 两条路线（按画面需求选，不是谁替代谁）
+
+```text
+A. Canvas 2D —— 排版驱动（本 skill §0-§17 覆盖的路线）
+   强项：扁平/印刷/仪器/HUD/大色块/字体排版/信息可视化/节奏卡点
+   上限：几千条线（再多会卡）；无真 3D；无 HDR 后期
+   代表产出：动画10（P(doom) 同曲，粗野主义橙黑，79MB 成品）
+
+B. WebGL / GLSL —— 空间驱动
+   强项：真 3D 场景 / 几万条线 / 体积光 / 引力透镜 / 程序化生成
+   代价：需要 three.js + GLSL + GPU 线段批处理 + HDR 后期管线
+   参考实现：github.com/mexicat/pdoom-video（TypeScript + three.js）
+```
+
+**判断标准**：
+```text
+需要"几万条线 / 真 3D 几何 / 空间感 / 引力透镜" → 选 B（Canvas 2D 做不到这个密度）
+其余（排版/色块/扁平/印刷/HUD/场景插画）    → 选 A（更快、更稳、已验证）
+```
+
+**关键认知**：原作 P(doom) 的"精细 3D"**不是画得更细，是换了渲染层**——
+同一首歌，我们用 Canvas 2D 做出的是"排版驱动"的合格成品（动画10），
+它用 WebGL 做出的是"空间驱动"的画面。两条路都能出片，取决于画面要什么。
+
+### 18.2 路线 B 的技术要点（提炼自 pdoom-video）
+
+```text
+引擎核心（自研，约 5 个模块）：
+  FSPass        全屏 GLSL 着色器通道（vUv + fragColor + GLSL_COMMON）
+  Compositor    合成（normal/add/screen/multiply/max + opacity/tint/scale/offset）
+  Layer2D       1920×1080 Canvas2D → sRGB 纹理（每层 2-4ms 上传，每场 ≤2-3 层）
+  makeRT        HalfFloat 线性 HDR 渲染目标（值 > 0.85 触发 bloom）
+  LineBatch     GPU 胶囊段批处理，2D 像素或 3D 世界坐标，10万-20万段
+
+GLSL 公共库（值得抄的）：
+  hash / snoise / fbm / curl2
+  2D/3D SDF + smin + aaFill + aaStroke（抗锯齿填充与描边）
+  ★ hatch(u, darkness) / hatchD(u, darkness, du) / engrave(uv, darkness, freq, angle)
+    —— 雕版阴影：用密集平行线代替明暗，正是 §1 铜版雕刻的 GPU 版
+    engrave = 细线 + 深影处交叉影线
+  heat(x) 橙色调色板 ramp；toSRGB / toLinear
+
+后期（post）：
+  bloom / bloomThreshold / bloomKnee / bloomRadius / halation /
+  ca（色差）/ grain / vignette / hud / fade / flash / shake / zoom / invert
+
+确定性要求（与我们的三地板一致）：
+  render(t) 必须是 f.t 的纯函数；禁 Math.random / Date.now / performance.now
+  随机用 mulberry32(seed) / hash(...)；有状态场景（粒子）要 reset() + 用 f.dt 积分
+  运动模糊：导出时每帧平均多个子帧（任意顺序），所以必须无副作用
+```
+
+### 18.3 数据接口（值得对齐的设计）
+
+```text
+每帧自带音频特征（直接喂给着色器）：
+  f.a = { rms, low, mid, high, vocal, drums, bass, other, kick, snare, hat, vonset }
+  f.beat, f.bar, f.beatPhase, f.barPhase
+
+歌词：word-level（words[].start/end），按内容查找不硬编码时间：
+  lyrics.get("sudden drop").words[3].start
+  辅助：wordProgress(word, t) / lineCharProgress(line, t)
+```
+
+**对我们 skill 的启示**：音乐分析的产出（audio_features.json）应包含
+**分轨包络**（vocal/drums/bass/other）+ **kick/snare/hat 事件**，
+而不只是 bpm/onset——这样无论走哪条路线，成员都能直接按特征驱动画面。
+
+### 18.4 场景组织（可借鉴）
+
+```text
+一个场景 = 一个模块（scenes/<name>.ts），default-export 一个 class
+  init()   预计算（几何/字体轮廓）
+  render(f, out)  按 f.t 画到 out，返回后期覆盖（{bloom: 0.7}）
+timeline.ts 管编辑（场景窗口锚定歌词行 + 吸附节拍网格）
+共享母题 _motifs.ts（同一意象跨场景保持一致）
+```
+
+★ 这与我们的"元素优先分工"（§2.1.5）是同一个思路：
+**跨场景复用的东西抽成共享模块，避免每个场景各画一遍导致不一致**。

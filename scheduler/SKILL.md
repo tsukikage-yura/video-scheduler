@@ -72,6 +72,10 @@ description: The scheduler (orchestrator) skill for time-driven videos of any ki
 
 音频可提取信息（节奏/频谱/歌词时间轴等）= 素材，全部进资源清单。
 
+**渲染路线先定**（见 [`references/technique-recipes.md`](references/technique-recipes.md) §18）：
+排版驱动（扁平/印刷/HUD/大色块）→ Canvas 2D（默认，已验证）；
+空间驱动（几万条线/真 3D/引力透镜）→ WebGL/GLSL（参考 mexicat/pdoom-video）。
+
 **音乐分析按四层做**（详见 [`references/music-visual-mapping.md`](references/music-visual-mapping.md)）：
 L1 节拍层（beat/onset/downbeat/节奏密度/切分/tempo curve）→ L2 结构层（段落切分/自相似/能量弧/静音段/novelty 转折）
 → L3 音色层（调性/和声变化/频谱质心/频谱通量）→ L4 分轨层（人声分离/鼓组/人声起止/音高曲线）。
