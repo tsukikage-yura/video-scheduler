@@ -13,12 +13,28 @@
 | `RECIPE.md` | 材质配方速查 |
 | `shoot.mjs` | 截图工具（playwright-core + chromium headless shell） |
 
+## lib/genshin/ — 2.5D 分层过场库（原神式，2026-10-11 实验产出）
+
+| 文件 | 内容 |
+| --- | --- |
+| `architecture.js` | **哥特建筑库**（32KB）：拱形（双心尖拱/火焰式/archPt 参数化取点）、母题（circlesUnion/roseWindow/fleurDeLis/vineScroll/meander）、构件（drawColumn 带 entasis/drawWindow/drawArchivolt/drawBalustrade）、透视（makeCam/floorGrid） |
+| `scene-gen.mjs` | **场景生成器**（38KB）：9 个可插拔模块 + 4 套调色板 + 15 个场景配置；新增场景 = 加一行配置 |
+| `light-engine.js` | **光效引擎**（18KB）：冷暖比例/光柱四层/窗光/光池/暗角/bloom |
+
+**用法**：详见 `../references/technique-recipes.md` §19（2.5D 分层过场，含全部量化参数）。
+
+---
+
 ## notes/ — 方向总结
 
 | 文件 | 内容 |
 | --- | --- |
 | `character-summary.md` | 角色造型方向总结（15 实验） |
 | `material-summary.md` | 材质质感方向总结（15 实验） |
+| `genshin/_G1-summary.md` | 哥特建筑语汇总结 |
+| `genshin/_G2-summary.md` | 分层与视差总结（四个差） |
+| `genshin/_G5-summary.md` | 角色处理总结（含诚实边界） |
+| `genshin/_G6-summary.md` + `_G6-techniques.md` | 完整场景合成总结 + 技法总表 |
 
 ## 用法
 
